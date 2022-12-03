@@ -1,23 +1,23 @@
 class Puzzle:
     fileName: str
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, puzzle_part):
         self.fileName = file_name
+        self.puzzle_part = puzzle_part
 
     def parse(self):
         with open(self.fileName) as file:
-            for line in file:
-                if line.rstrip():
-                    line = line.rstrip()
-                else:
-                    pass
+            if self.puzzle_part == "a":
+                for line in file:
+                    if line.rstrip():
+                        line = line.rstrip()
+                    else:
+                        pass
 
     def print(self):
         pass
 
-    def solvea(self):
+    def solve(self):
         self.print()
-        return 0
-
-    def solveb(self):
-        return 0
+        if self.puzzle_part == "a":
+            return 0
