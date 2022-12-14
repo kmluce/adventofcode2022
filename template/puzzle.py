@@ -7,12 +7,11 @@ class Puzzle:
 
     def parse(self):
         with open(self.fileName) as file:
-            if self.puzzle_part == "a":
-                for line in file:
-                    if line.rstrip():
-                        line = line.rstrip()
-                    else:
-                        pass
+            for line in file:
+                if line.rstrip():
+                    line = line.rstrip()
+                else:
+                    pass
 
     def print(self):
         pass
@@ -20,4 +19,6 @@ class Puzzle:
     def solve(self):
         self.print()
         if self.puzzle_part == "a":
+            return 0
+        else:
             return 0
