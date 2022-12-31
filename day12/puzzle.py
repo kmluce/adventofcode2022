@@ -1,7 +1,6 @@
 class Puzzle:
     fileName: str
 
-
     def __init__(self, file_name, puzzle_part):
         self.fileName = file_name
         self.puzzle_part = puzzle_part
@@ -28,7 +27,7 @@ class Puzzle:
                     if 'S' in self.input_map[curr_y]:
                         # print("    S in ", line)
                         self.start_coords = [curr_y, self.input_map[curr_y].index('S')]
-                        self.input_map[self.start_coords[0]][self.start_coords[1]]= 'a'
+                        self.input_map[self.start_coords[0]][self.start_coords[1]] = 'a'
                     if 'E' in self.input_map[curr_y]:
                         # print("    E in ", line)
                         self.end_coords = [curr_y, self.input_map[curr_y].index('E')]
@@ -52,15 +51,15 @@ class Puzzle:
         print("elevation map as numbers:")
         for y in range(0, len(self.elevation_map)):
             for x in range(0, len(self.elevation_map[y])):
-                print('{:2}'.format(self.elevation_map[y][x]), end =" ")
+                print('{:2}'.format(self.elevation_map[y][x]), end=" ")
             print(" ")
         print("distance map as numbers:")
         for y in range(0, len(self.distance_map)):
             for x in range(0, len(self.distance_map[y])):
-                print('{:2}'.format(self.distance_map[y][x]), end =" ")
+                print('{:2}'.format(self.distance_map[y][x]), end=" ")
             print(" ")
-        num_infinites = sum([lst.count(self.INFINITY) for lst in self.distance_map])
-        print("number of inifinite entries is", num_infinites)
+        num_infinities = sum([lst.count(self.INFINITY) for lst in self.distance_map])
+        print("number of infinite entries is", num_infinities)
         print("queue is:", self.queue)
 
     def distance(self, coords):
@@ -69,33 +68,31 @@ class Puzzle:
     def neighbors(self, coords):
         a = coords[0]
         b = coords[1]
-        potential_neighbors = [[a-1,b], [a+1, b], [a, b-1], [a,b+1]]
-        #[lst for lst in potential_neighbors if 3<=lst[0]<=6 and 0<=lst[1]<=5]
-        neighbors = [lst for lst in potential_neighbors if 0<=lst[0]<=self.max_y and 0<=lst[1]<=self.max_x]
+        potential_neighbors = [[a-1, b], [a+1, b], [a, b-1], [a, b+1]]
+        # [lst for lst in potential_neighbors if 3<=lst[0]<=6 and 0<=lst[1]<=5]
+        neighbors = [lst for lst in potential_neighbors if 0 <= lst[0] <= self.max_y and 0 <= lst[1] <= self.max_x]
         return neighbors
 
-    def unvisitedNeighbors(self, coords):
+    def unvisited_neighbors(self, coords):
         a = coords[0]
         b = coords[1]
-        potential_neighbors = [[a-1,b], [a+1, b], [a, b-1], [a,b+1]]
-        #[lst for lst in potential_neighbors if 3<=lst[0]<=6 and 0<=lst[1]<=5]
-        neighbors = [lst for lst in potential_neighbors if 0<=lst[0]<=self.max_y and 0<=lst[1]<=self.max_x ]
+        potential_neighbors = [[a-1, b], [a+1, b], [a, b-1], [a, b+1]]
+        # [lst for lst in potential_neighbors if 3<=lst[0]<=6 and 0<=lst[1]<=5]
+        neighbors = [lst for lst in potential_neighbors if 0 <= lst[0] <= self.max_y and 0 <= lst[1] <= self.max_x]
         # print("    checking if neighbors are visited:", coords, neighbors)
-        neighbors = [lst for lst in neighbors if self.visited[lst[0]][lst[1]] == False]
+        neighbors = [lst for lst in neighbors if self.visited[lst[0]][lst[1]] is False]
         return neighbors
 
-    def unvisitedPathedNeighbors(self, coords):
+    def unvisited_pathed_neighbors(self, coords):
         a = coords[0]
         b = coords[1]
         potential_neighbors = [[a - 1, b], [a + 1, b], [a, b - 1], [a, b + 1]]
         # [lst for lst in potential_neighbors if 3<=lst[0]<=6 and 0<=lst[1]<=5]
         neighbors = [lst for lst in potential_neighbors if 0 <= lst[0] <= self.max_y and 0 <= lst[1] <= self.max_x
-                     and self.visited[lst[0]][lst[1]] == False and self.distance_map[lst[0]][lst[1]] != self.INFINITY]
+                     and self.visited[lst[0]][lst[1]] is False and self.distance_map[lst[0]][lst[1]] != self.INFINITY]
         return neighbors
 
-    def solve(self):
-        self.print()
-
+    def reverse_dijkstra(self):
         self.distance_map[self.start_coords[0]][self.start_coords[1]] = 0
         # pure Dijkstra
         while self.queue:
@@ -103,19 +100,39 @@ class Puzzle:
             if curr_coords == self.end_coords:
                 break
             self.visited[curr_coords[0]][curr_coords[1]] = True
-            for new_coords in self.unvisitedNeighbors(curr_coords):
+            for new_coords in self.unvisited_neighbors(curr_coords):
                 # print(" neighbors of", curr_coords, "are", self.neighbors(curr_coords))
-                # print("checking elevation of new square", new_coords, self.elevation_map[new_coords[0]][new_coords[1]],
-                #       "against elevation of old square", curr_coords, self.elevation_map[curr_coords[0]][curr_coords[1]])
-                if self.elevation_map[new_coords[0]][new_coords[1]] - self.elevation_map[curr_coords[0]][curr_coords[1]] <= 1:
-                    if self.distance(curr_coords) + 1 <= self.distance(new_coords) or self.distance(new_coords) == self.INFINITY:
+                if self.elevation_map[new_coords[0]][new_coords[1]] - self.elevation_map[curr_coords[0]][
+                    curr_coords[1]] <= 1:
+                    if self.distance(curr_coords) + 1 <= self.distance(new_coords) or self.distance(
+                            new_coords) == self.INFINITY:
                         # print("setting elevation of", new_coords, "to distance", self.distance(curr_coords), "plus 1")
                         self.distance_map[new_coords[0]][new_coords[1]] = self.distance(curr_coords) + 1
-            self.queue.extend([item for item in self.unvisitedPathedNeighbors(curr_coords) if item not in self.queue])
+            self.queue.extend([item for item in self.unvisited_pathed_neighbors(curr_coords) if item not in self.queue])
             self.queue.sort(key=self.distance)
             # self.print()
         return self.distance_map[self.end_coords[0]][self.end_coords[1]]
+
+    def solve(self):
+        self.print()
+
         if self.puzzle_part == "a":
-            return 0
+            self.distance_map[self.start_coords[0]][self.start_coords[1]] = 0
+            # pure Dijkstra
+            while self.queue:
+                curr_coords = self.queue.pop(0)
+                if curr_coords == self.end_coords:
+                    break
+                self.visited[curr_coords[0]][curr_coords[1]] = True
+                for new_coords in self.unvisited_neighbors(curr_coords):
+                    # print(" neighbors of", curr_coords, "are", self.neighbors(curr_coords))
+                    if self.elevation_map[new_coords[0]][new_coords[1]] - self.elevation_map[curr_coords[0]][curr_coords[1]] <= 1:
+                        if self.distance(curr_coords) + 1 <= self.distance(new_coords) or self.distance(new_coords) == self.INFINITY:
+                            # print("setting elevation of", new_coords, "to distance", self.distance(curr_coords), "plus 1")
+                            self.distance_map[new_coords[0]][new_coords[1]] = self.distance(curr_coords) + 1
+                self.queue.extend([item for item in self.unvisited_pathed_neighbors(curr_coords) if item not in self.queue])
+                self.queue.sort(key=self.distance)
+                # self.print()
+            return self.distance_map[self.end_coords[0]][self.end_coords[1]]
         else:
             return 0
