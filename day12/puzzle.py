@@ -93,25 +93,29 @@ class Puzzle:
         return neighbors
 
     def reverse_dijkstra(self):
-        self.distance_map[self.start_coords[0]][self.start_coords[1]] = 0
+        self.distance_map[self.end_coords[0]][self.end_coords[1]] = 0
         # pure Dijkstra
+        self.queue = [self.end_coords]
+        # self.print()
         while self.queue:
             curr_coords = self.queue.pop(0)
-            if curr_coords == self.end_coords:
-                break
             self.visited[curr_coords[0]][curr_coords[1]] = True
             for new_coords in self.unvisited_neighbors(curr_coords):
                 # print(" neighbors of", curr_coords, "are", self.neighbors(curr_coords))
-                if self.elevation_map[new_coords[0]][new_coords[1]] - self.elevation_map[curr_coords[0]][
-                    curr_coords[1]] <= 1:
-                    if self.distance(curr_coords) + 1 <= self.distance(new_coords) or self.distance(
-                            new_coords) == self.INFINITY:
+                if self.elevation_map[new_coords[0]][new_coords[1]] - \
+                        self.elevation_map[curr_coords[0]][curr_coords[1]] >= -1:
+                    if self.distance(curr_coords) + 1 <= self.distance(new_coords) \
+                            or self.distance(new_coords) == self.INFINITY:
                         # print("setting elevation of", new_coords, "to distance", self.distance(curr_coords), "plus 1")
                         self.distance_map[new_coords[0]][new_coords[1]] = self.distance(curr_coords) + 1
             self.queue.extend([item for item in self.unvisited_pathed_neighbors(curr_coords) if item not in self.queue])
             self.queue.sort(key=self.distance)
             # self.print()
-        return self.distance_map[self.end_coords[0]][self.end_coords[1]]
+        self.print()
+        solutions_space = [self.distance([a,b]) for a in range(0,self.max_y + 1) for b in range(0,self.max_x + 1) if
+                           self.elevation_map[a][b] == 1 and self.distance([a, b]) != self.INFINITY]
+        # print("solutions space is", solutions_space)
+        return min(solutions_space)
 
     def solve(self):
         self.print()
@@ -126,13 +130,17 @@ class Puzzle:
                 self.visited[curr_coords[0]][curr_coords[1]] = True
                 for new_coords in self.unvisited_neighbors(curr_coords):
                     # print(" neighbors of", curr_coords, "are", self.neighbors(curr_coords))
-                    if self.elevation_map[new_coords[0]][new_coords[1]] - self.elevation_map[curr_coords[0]][curr_coords[1]] <= 1:
-                        if self.distance(curr_coords) + 1 <= self.distance(new_coords) or self.distance(new_coords) == self.INFINITY:
-                            # print("setting elevation of", new_coords, "to distance", self.distance(curr_coords), "plus 1")
+                    if self.elevation_map[new_coords[0]][new_coords[1]] - \
+                            self.elevation_map[curr_coords[0]][curr_coords[1]] <= 1:
+                        if self.distance(curr_coords) + 1 <= self.distance(new_coords) \
+                                or self.distance(new_coords) == self.INFINITY:
+                            # print("setting elevation of", new_coords, "to distance",
+                            # self.distance(curr_coords), "plus 1")
                             self.distance_map[new_coords[0]][new_coords[1]] = self.distance(curr_coords) + 1
-                self.queue.extend([item for item in self.unvisited_pathed_neighbors(curr_coords) if item not in self.queue])
+                self.queue.extend([item for item in self.unvisited_pathed_neighbors(curr_coords)
+                                   if item not in self.queue])
                 self.queue.sort(key=self.distance)
                 # self.print()
             return self.distance_map[self.end_coords[0]][self.end_coords[1]]
         else:
-            return 0
+            return self.reverse_dijkstra()
