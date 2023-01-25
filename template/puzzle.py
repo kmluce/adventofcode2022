@@ -1,9 +1,10 @@
 class Puzzle:
     fileName: str
 
-    def __init__(self, file_name, puzzle_part):
+    def __init__(self, file_name, puzzle_part, debug_level):
         self.fileName = file_name
         self.puzzle_part = puzzle_part
+        self.debug_level = debug_level
 
     def parse(self):
         with open(self.fileName) as file:
