@@ -6,6 +6,17 @@ class Puzzle:
         self.puzzle_part = puzzle_part
         self.debug_level = debug_level
 
+    def print_run_info(self):
+        self.print_debug(1, f"PUZZLE RUN:  running part {self.puzzle_part} with file "
+                            f"{self.fileName} and debug level {self.debug_level}")
+
+    def print_debug(self, string_debug_level: int, debug_string: str):
+        if string_debug_level <= self.debug_level:
+            print(debug_string)
+
+    def print(self):
+        pass
+
     def parse(self):
         with open(self.fileName) as file:
             for line in file:
@@ -14,10 +25,8 @@ class Puzzle:
                 else:
                     pass
 
-    def print(self):
-        pass
-
     def solve(self):
+        self.parse()
         self.print()
         if self.puzzle_part == "a":
             return 0
