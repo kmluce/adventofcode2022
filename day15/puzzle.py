@@ -21,7 +21,7 @@ class Puzzle:
         self.beacons = []
 
     def print_run_info(self):
-        self.print_debug(1, f"PUZZLE RUN:  running part {self.puzzle_part} with file "
+        self.print_debug(1, f"{chr(10)}PUZZLE RUN:  running part {self.puzzle_part} with file "
                             f"{self.fileName} and debug level {self.debug_level}")
 
     def print_debug(self, string_debug_level: int, debug_printable):
@@ -66,7 +66,6 @@ class Puzzle:
         self.sensor_reach_map = [["." for _x in range(0, self.x_size + 1)] for _y in range(0, self.y_size + 1)]
         self.print_debug(4, f"actual map size is{len(self.sensor_reach_map)}, {len(self.sensor_reach_map[0])}")
         for sensor_coords in self.coords_list:
-            print("sensor_cords:", sensor_coords)
             self.sensor_reach_map[sensor_coords[0][1] - self.shift_y][sensor_coords[0][0] - self.shift_x] = 'S'
             self.sensor_reach_map[sensor_coords[1][1] - self.shift_y][sensor_coords[1][0] - self.shift_x] = 'B'
 
@@ -87,34 +86,56 @@ class Puzzle:
         return len([x for y in no_beacon if y not in self.beacons])
 
     def sensor_intersection(self, y):
-        nonbeacon_points = 0
         intersections = []
         consolidated_segments = []
         for [sensor, dist] in self.distances_list:
-            self.print_debug(2, f"checking sensor {sensor} and distance {dist} for intersection with {y}")
+            self.print_debug(3, f"  checking sensor {sensor} and distance {dist} for intersection with {y}")
             if abs(sensor[1] - y) <= dist:
-                self.print_debug(3, f"  sensor {sensor} intersects with y={y}")
+                self.print_debug(4, f"      sensor {sensor} intersects with y={y}")
                 span = dist - abs(sensor[1] - y)
                 # intersections.append([[max(self.min_input_coords[0], sensor[0] - span), y],
                 #                       [min(self.max_input_coords[0], sensor[0] + span), y]])
                 intersections.append([[sensor[0] - span, y],
                                       [sensor[0] + span, y]])
-                self.print_debug(3, f"added intersection {intersections[-1]}")
+                self.print_debug(3, f"      added intersection {intersections[-1]}")
         self.print_debug(2, f"intersection segments: {intersections}")
         intersections.sort(key=lambda point: point[0][0])
         self.print_debug(2, f"intersections sorted: {intersections}")
         for [begin, end] in intersections:
             if not consolidated_segments:
                 consolidated_segments.append([begin, end])
-            elif begin[0] <= consolidated_segments[-1][1][0]:
+            elif begin[0] <= consolidated_segments[-1][1][0] + 1:
                 if end[0] > consolidated_segments[-1][1][0]:
                     consolidated_segments[-1][1][0] = end[0]
             else:
                 consolidated_segments.append([begin, end])
         self.print_debug(2, f"consolidated segments are: {consolidated_segments}")
+        return consolidated_segments
+
+    def solve_part_a(self, y):
+        nonbeacon_points = 0
+        consolidated_segments = self.sensor_intersection(y)
         for segment in consolidated_segments:
             nonbeacon_points += segment[1][0] - segment[0][0]
         return nonbeacon_points
+
+    def solve_part_b(self, min_xy, max_xy):
+        intersections = []
+        for curr_y in range(0, max_xy + 1):
+            points = 0
+            self.print_debug(3, f"testing row {curr_y}")
+            intersections = self.sensor_intersection(curr_y)
+            if intersections[0][0][0] < 0:
+                intersections[0][0][0] = 0
+            if intersections[-1][1][0] > max_xy:
+                intersections[-1][1][0] = max_xy
+            self.print_debug(2, f"clipped intersections: {intersections}")
+            for segment in intersections:
+                points += segment[1][0] - segment[0][0] + 1
+            self.print_debug(2, f"points in line y={curr_y} is {points}")
+            if points <= max_xy:
+                break
+        return (intersections[0][1][0] + 1) * 4000000 + intersections[0][1][1]
 
     def solve(self):
         self.print_run_info()
@@ -125,7 +146,11 @@ class Puzzle:
             self.map_coords()
             self.print()
             # return self.num_beacons(10)
-            return self.sensor_intersection(10)
+            return self.solve_part_a(10)
         elif self.puzzle_part == "a" and self.fileName == "test_data.txt":
-            return self.sensor_intersection(2000000)
+            return self.solve_part_a(2000000)
             # return self.num_beacons(2000000)
+        elif self.puzzle_part == "b" and self.fileName == "demo_data.txt":
+            return self.solve_part_b(0,20)
+        elif self.puzzle_part == "b" and self.fileName == "test_data.txt":
+            return self.solve_part_b(0,4000000)
